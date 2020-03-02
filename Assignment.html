@@ -1,0 +1,80 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFO 474: Maps Assignment</title>
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<script>
+const m = {
+    width: 1000,
+    height: 800
+}
+
+const svg = d3.select("body").append('svg')
+    .attr('width', m.width)
+    .attr('height', m.height)
+
+const g = svg.append('g')
+
+d3.json('nygeo.json', function(data) {
+
+    d3.csv('data.csv', function(data2) {
+
+        const projection = d3.geoAlbers()
+            .scale(90000)
+            .rotate([74.0060, 0])
+            .center([0, 40.7128])
+            .translate([400, 300]);
+
+        let point = data2[0]
+        let arr = [ point['longitude'] , point['latitude'] ]
+        let scaled = projection(arr)
+
+
+        const path = d3.geoPath()
+        .projection(projection)
+
+        g.selectAll('path')
+        .data(data.features)
+        .enter()
+        .append('path')
+            .attr('fill', '#b1b6bd')
+            .attr('d', path)
+
+        g.selectAll('.circle')
+            .data(data2)
+            .enter()
+            .append('circle')
+                .attr('cx', function(d) {
+                    let arrayOfPoints = projection([d['longitude'], d['latitude']])
+                    return arrayOfPoints[0]
+                })
+                .attr('cy', function(d) {
+                    let arrayOfPoints = projection([d['longitude'], d['latitude']])
+                    return arrayOfPoints[1]
+                })
+                .attr('r', 3)
+                .attr('fill', '#565be3')
+                .on( "click", function(){
+                  d3.select(this)
+                    .attr("opacity",1)
+                    .transition()
+                    .duration(5000)
+                    .attr("cx", m.width * Math.random())
+                    .attr("cy", m.height * Math.random())
+                    .attr( "opacity", 0 )
+                    .on("end",function(){
+                      d3.select(this).remove();
+                    })
+                });
+
+
+    })
+
+})
+    </script>
+</body>
+</html>
